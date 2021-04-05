@@ -22,9 +22,9 @@
 + clone项目到本地
 + src目录下新建config.h文件，文件内容如下
 ```c
-//配置你的wifi名称和密码
+//配置你的wifi名称和密码，配置2.4G的WIFI
 #define WIFI_NAME "xxx"
-#define WIFI_SECRET "xxx"
+#define WIFI_PASSWORD "xxx"
 ```
 + 编译项目
 + 接线

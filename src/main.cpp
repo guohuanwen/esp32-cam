@@ -23,7 +23,7 @@
 #include "config.h"
 
 const char* ssid = WIFI_NAME;
-const char* password = WIFI_SECRET;
+const char* password = WIFI_PASSWORD;
 
 void startCameraServer();
 
