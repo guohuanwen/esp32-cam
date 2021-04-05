@@ -7,10 +7,10 @@
 
 ## 开发环境
 + PlatformIO
-    + https://docs.platformio.org/en/latest/core/installation.html
+  + https://docs.platformio.org/en/latest/core/installation.html
 + CLion 2020.3
-    + https://www.jetbrains.com/clion/
-    + 安装插件 platformio
+  + https://www.jetbrains.com/clion/
+  + 安装插件 platformio
 
 ## 功能
 + 本地监控 ✅
@@ -27,11 +27,11 @@
 #define WIFI_SECRET "xxx"
 ```
 + 编译项目
-+ 接线  
++ 接线
   + ESP32-CAM 引脚  
-![image1][./image/ESP32-CAM.png]   
+    ![image1](./image/ESP32-CAM.png)
   + ESP32-CAM 接线  
-![image2][./image/ESP32-CAM-CONNECTION.png]  
+    ![image2](./image/ESP32-CAM-CONNECTION.png)
 + 上传
 + 查看日志
 ```
