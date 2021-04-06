@@ -2,6 +2,7 @@
 
 #include "esp_camera.h"
 #include <WiFi.h>
+#include "../include/websocket/WebSocketsClient.h"
 
 //
 // WARNING!!! PSRAM IC required for UXGA resolution and high JPEG quality
@@ -22,16 +23,22 @@
 #include "camera_pins.h"
 #include "config.h"
 
-const char* ssid = WIFI_NAME;
-const char* password = WIFI_PASSWORD;
+const char *ssid = WIFI_NAME;
+const char *password = WIFI_PASSWORD;
+WebSocketsClient webSocket;
 
+//本地http服务器渲染
 void startCameraServer();
 
-void setup() {
-    Serial.begin(115200);
-    Serial.setDebugOutput(true);
-    Serial.println();
+void log(const char *format, ...) {
+    Serial.printf(format);
+}
 
+void logln(const char *format, ...) {
+
+}
+
+bool initCamera() {
     camera_config_t config;
     config.ledc_channel = LEDC_CHANNEL_0;
     config.ledc_timer = LEDC_TIMER_0;
@@ -56,7 +63,7 @@ void setup() {
 
     // if PSRAM IC present, init with UXGA resolution and higher JPEG quality
     //                      for larger pre-allocated frame buffer.
-    if(psramFound()){
+    if (psramFound()) {
         config.frame_size = FRAMESIZE_UXGA;
         config.jpeg_quality = 10;
         config.fb_count = 2;
@@ -68,17 +75,17 @@ void setup() {
 
 #if defined(CAMERA_MODEL_ESP_EYE)
     pinMode(13, INPUT_PULLUP);
-  pinMode(14, INPUT_PULLUP);
+    pinMode(14, INPUT_PULLUP);
 #endif
 
     // camera init
     esp_err_t err = esp_camera_init(&config);
     if (err != ESP_OK) {
         Serial.printf("Camera init failed with error 0x%x", err);
-        return;
+        return false;
     }
 
-    sensor_t * s = esp_camera_sensor_get();
+    sensor_t *s = esp_camera_sensor_get();
     // initial sensors are flipped vertically and colors are a bit saturated
     if (s->id.PID == OV3660_PID) {
         s->set_vflip(s, 1); // flip it back
@@ -90,26 +97,111 @@ void setup() {
 
 #if defined(CAMERA_MODEL_M5STACK_WIDE) || defined(CAMERA_MODEL_M5STACK_ESP32CAM)
     s->set_vflip(s, 1);
-  s->set_hmirror(s, 1);
+    s->set_hmirror(s, 1);
 #endif
+    Serial.printf("Camera init success");
+    return true;
+}
 
+void captureVideo() {
+    camera_fb_t *fb = NULL;
+
+    fb = esp_camera_fb_get();
+    if (NULL == fb) {
+        Serial.println("Camera capture failed");
+    } else {
+        Serial.println("Camera capture success");
+        bool result = webSocket.sendBIN(fb->buf, fb->len);
+        Serial.printf("sendBIN %d", result);
+        esp_camera_fb_return(fb);
+        fb = NULL;
+    }
+}
+
+void initWifi() {
     WiFi.begin(ssid, password);
-
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
         Serial.print(".");
     }
     Serial.println("");
     Serial.println("WiFi connected");
+}
 
-    startCameraServer();
+void hexdump(const void *mem, uint32_t len, uint8_t cols = 16) {
+    const uint8_t* src = (const uint8_t*) mem;
+    Serial.printf("\n[HEXDUMP] Address: 0x%08X len: 0x%X (%d)", (ptrdiff_t)src, len, len);
+    for(uint32_t i = 0; i < len; i++) {
+        if(i % cols == 0) {
+            Serial.printf("\n[0x%08X] 0x%08X: ", (ptrdiff_t)src, i);
+        }
+        Serial.printf("%02X ", *src);
+        src++;
+    }
+    Serial.printf("\n");
+}
 
-    Serial.print("Camera Ready! Use 'http://");
-    Serial.print(WiFi.localIP());
-    Serial.println("' to connect");
+void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
+    switch(type) {
+        case WStype_DISCONNECTED:
+            Serial.printf("[WSc] Disconnected!\n");
+            break;
+        case WStype_CONNECTED:
+            Serial.printf("[WSc] Connected to url: %s\n", payload);
+            // send message to server when Connected
+            //webSocket.sendTXT("Connected");
+            break;
+        case WStype_TEXT:
+            Serial.printf("[WSc] get text: %s\n", payload);
+            // send message to server
+            // webSocket.sendTXT("message here");
+            break;
+        case WStype_BIN:
+            Serial.printf("[WSc] get binary length: %u\n", length);
+            hexdump(payload, length);
+            // send data to server
+            // webSocket.sendBIN(payload, length);
+            break;
+        case WStype_ERROR:
+            Serial.printf("[WSc] ERROR : %s\n", payload);
+            break;
+        case WStype_FRAGMENT_TEXT_START:
+            Serial.printf("[WSc] FRAGMENT_TEXT_START : %s\n", payload);
+            break;
+        case WStype_FRAGMENT_BIN_START:
+            Serial.printf("[WSc] FRAGMENT_BIN_START: %s\n", payload);
+            break;
+        case WStype_FRAGMENT:
+            Serial.printf("[WSc] FRAGMENT: %s\n", payload);
+            break;
+        case WStype_FRAGMENT_FIN:
+            Serial.printf("[WSc] FRAGMENT_FIN: %s\n", payload);
+            break;
+    }
+}
+
+void initWebSocket() {
+    Serial.println("initWebSocket");
+    webSocket.begin(WEBSOCKET_HOST, WEBSOCKET_PORT, WEBSOCKET_URL);
+    // event handler
+    webSocket.onEvent(webSocketEvent);
+    webSocket.setReconnectInterval(3000);
+    webSocket.enableHeartbeat(15000, 3000, 2);
+}
+
+void setup() {
+    Serial.begin(115200);
+    Serial.println();
+
+    initCamera();
+    initWifi();
+    initWebSocket();
 }
 
 void loop() {
-    // put your main code here, to run repeatedly:
-    delay(10000);
+    webSocket.loop();
+    if (webSocket.isConnected()) {
+        Serial.println("send");
+        captureVideo();
+    }
 }
