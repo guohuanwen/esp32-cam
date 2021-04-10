@@ -1,6 +1,14 @@
 # esp32-cam
 基于esp32-cam的一个项目
 
+## 目录结构
++ 3dmodel
+  + 3d模型，用来固定开发板 
++ board
+  + 开板相关代码
++ servers
+  + 服务器相关代码
+    
 ## 材料
 + ESP32-CAM 开发版
 + USB TO TTL下载器

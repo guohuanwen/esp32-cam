@@ -1,5 +1,1 @@
-.pio
-CMakeListsPrivate.txt
-cmake-build-*/ 
-/src/config.h
-.idea
+.DS_Store

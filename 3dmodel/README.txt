@@ -1,0 +1,1 @@
+ESP32 Cam housing by laisch on Thingiverse: https://www.thingiverse.com/thing:4192843
