@@ -5,7 +5,7 @@
 + 3dmodel
   + 3d模型，用来固定开发板 
 + board
-  + 开板相关代码
+  + 开发板相关代码
 + servers
   + 服务器相关代码
     
@@ -31,8 +31,12 @@
 + src目录下新建config.h文件，文件内容如下
 ```c
 //配置你的wifi名称和密码，配置2.4G的WIFI
-#define WIFI_NAME "xxx"
-#define WIFI_PASSWORD "xxx"
+#define WIFI_NAME "xx"
+#define WIFI_PASSWORD "xx"
+//配置服务器地址和端口
+#define WEBSOCKET_HOST "192.168.3.34"
+#define WEBSOCKET_PORT 8080
+#define WEBSOCKET_URL "/video"
 ```
 + 编译项目
 + 接线
