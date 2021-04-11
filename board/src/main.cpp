@@ -2,7 +2,7 @@
 
 #include "esp_camera.h"
 #include <WiFi.h>
-#include "../include/websocket/WebSocketsClient.h"
+#include "WebSocketsClient.h"
 
 //
 // WARNING!!! PSRAM IC required for UXGA resolution and high JPEG quality
@@ -26,6 +26,12 @@
 const char *ssid = WIFI_NAME;
 const char *password = WIFI_PASSWORD;
 WebSocketsClient webSocket;
+
+#include "ESP32Servo.h"
+#define PIN_SERVO 12 //定义舵机引脚
+Servo servo;
+const int minUs = 1000;
+const int maxUs = 2000;
 
 //本地http服务器渲染
 void startCameraServer();
@@ -189,10 +195,27 @@ void initWebSocket() {
     webSocket.enableHeartbeat(15000, 3000, 2);
 }
 
+void initServo() {
+    ESP32PWM::allocateTimer(0);
+    ESP32PWM::allocateTimer(1);
+    ESP32PWM::allocateTimer(2);
+    ESP32PWM::allocateTimer(3);
+    servo.setPeriodHertz(50);
+    servo.attach(PIN_SERVO, minUs, maxUs);
+}
+
+void turnTo(int degree) {
+    if (degree < 0) degree = 0;
+    if (degree > 180) degree = 180;
+    servo.write(degree);
+    delay(100);
+}
+
 void setup() {
     Serial.begin(115200);
     Serial.println();
 
+    initServo();
     initCamera();
     initWifi();
     initWebSocket();
@@ -201,7 +224,6 @@ void setup() {
 void loop() {
     webSocket.loop();
     if (webSocket.isConnected()) {
-        Serial.println("send");
         captureVideo();
     }
 }

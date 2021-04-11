@@ -1,4 +1,5 @@
 .pio
+CMakeLists.txt
 CMakeListsPrivate.txt
 cmake-build-*/ 
 /src/config.h
