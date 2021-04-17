@@ -33,6 +33,8 @@ Servo servo;
 const int minUs = 1000;
 const int maxUs = 2000;
 
+bool isOpenCamera;
+
 //本地http服务器渲染
 void startCameraServer();
 
@@ -116,9 +118,7 @@ void captureVideo() {
     if (NULL == fb) {
         Serial.println("Camera capture failed");
     } else {
-        Serial.println("Camera capture success");
-        bool result = webSocket.sendBIN(fb->buf, fb->len);
-        Serial.printf("sendBIN %d", result);
+        webSocket.sendBIN(fb->buf, fb->len);
         esp_camera_fb_return(fb);
         fb = NULL;
     }
@@ -196,12 +196,11 @@ void initWebSocket() {
 }
 
 void initServo() {
-    ESP32PWM::allocateTimer(0);
-    ESP32PWM::allocateTimer(1);
+    int channel = ESP32PWM::timerAndIndexToChannel(2, 0);
     ESP32PWM::allocateTimer(2);
-    ESP32PWM::allocateTimer(3);
     servo.setPeriodHertz(50);
     servo.attach(PIN_SERVO, minUs, maxUs);
+    Serial.printf("ESP32PWM channel %d", channel);
 }
 
 void turnTo(int degree) {
@@ -215,15 +214,16 @@ void setup() {
     Serial.begin(115200);
     Serial.println();
 
-    initServo();
     initCamera();
     initWifi();
     initWebSocket();
+    initServo();
+    turnTo(0);
 }
 
 void loop() {
     webSocket.loop();
-    if (webSocket.isConnected()) {
+    if (webSocket.isConnected() && isOpenCamera) {
         captureVideo();
     }
 }
