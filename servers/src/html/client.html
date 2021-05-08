@@ -12,16 +12,50 @@
 </head>
 
 <body>
-<canvas id="Video" width="240" height="320"></canvas>
+<canvas id="video" width="240" height="320"></canvas>
 <pre id="FrameRate"></pre>
 <pre id="Msg"></pre>
+<button width="100" height="60" onclick="openBtn()">open</button>
+<button width="100" height="60" onclick="closeBtn()">close</button>
+<button width="100" height="60" onclick="turnTo0()">turnTo0</button>
+<button width="100" height="60" onclick="turnTo90()">turnTo90</button>
+<button width="100" height="60" onclick="turnTo180()">turnTo180</button>
 
 <script>
-    var ws;
+    var webSocket;
     //定义服务器地址
-    var wsURL = "ws://127.0.0.1:8080/stream";
-    var canvas = document.getElementById('Video');
+    var wsURL = "ws://" + document.location.host + "/client/ws";
+    var canvas = document.getElementById('video');
     var ctx = canvas.getContext('2d');
+
+    function openBtn() {
+        if (webSocket) {
+            webSocket.send("OpenCamera");
+        }
+    }
+
+    function closeBtn() {
+        if (webSocket) {
+            webSocket.send("CloseCamera");
+        }
+    }
+
+    function turnTo0() {
+        if (webSocket) {
+            webSocket.send("Turn0");
+        }
+    }
+    function turnTo90() {
+        if (webSocket) {
+            webSocket.send("Turn90");
+        }
+    }
+
+    function turnTo180() {
+        if (webSocket) {
+            webSocket.send("Turn180");
+        }
+    }
 
     var frameCount = 0;
     window.setInterval(function () {
@@ -44,25 +78,25 @@
     }
 
     function initWebsocket() {
-        ws = new WebSocket(wsURL);
-        ws.SendCmd = function (req) {
+        webSocket = new WebSocket(wsURL);
+        webSocket.SendCmd = function (req) {
             req = JSON.stringify(req);
-            ws.send(req);
+            webSocket.send(req);
         }
 
-        ws.onopen = function () {
+        webSocket.onopen = function () {
             Msg("websocket opened");
         };
 
-        ws.onerror = function (event) {
+        webSocket.onerror = function (event) {
             Msg("websocket error: " + event);
         };
 
-        ws.onclose = function (event) {
+        webSocket.onclose = function (event) {
             Msg("websocket closed with code: " + event.code + " reason: " + event.reason);
         };
 
-        ws.onmessage = function (event) {
+        webSocket.onmessage = function (event) {
             imageData = event.data;
             frameCount++;
             Msg("frame data len: ", imageData.size);
@@ -79,7 +113,6 @@
             }
         };
     }
-
     initWebsocket();
 </script>
 </body>

@@ -22,6 +22,7 @@
 
 #include "camera_pins.h"
 #include "config.h"
+#include "action.h"
 
 const char *ssid = WIFI_NAME;
 const char *password = WIFI_PASSWORD;
@@ -147,7 +148,23 @@ void hexdump(const void *mem, uint32_t len, uint8_t cols = 16) {
     Serial.printf("\n");
 }
 
+void initServo() {
+    int channel = ESP32PWM::timerAndIndexToChannel(2, 0);
+    ESP32PWM::allocateTimer(2);
+    servo.setPeriodHertz(50);
+    servo.attach(PIN_SERVO, minUs, maxUs);
+    Serial.printf("ESP32PWM channel %d", channel);
+}
+
+void turnTo(int degree) {
+    if (degree < 0) degree = 0;
+    if (degree > 180) degree = 180;
+    servo.write(degree);
+    delay(100);
+}
+
 void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
+    const char* message = reinterpret_cast<char *>(payload);
     switch(type) {
         case WStype_DISCONNECTED:
             Serial.printf("[WSc] Disconnected!\n");
@@ -155,10 +172,30 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
         case WStype_CONNECTED:
             Serial.printf("[WSc] Connected to url: %s\n", payload);
             // send message to server when Connected
-            //webSocket.sendTXT("Connected");
+            webSocket.sendTXT("Uploader Connected");
             break;
         case WStype_TEXT:
-            Serial.printf("[WSc] get text: %s\n", payload);
+            Serial.printf("[WSc] get text: %s\n", message);
+            if (strcmp(message, ACTION_OPEN_CAMERA) == 0) {
+                Serial.println("[WSc] action: open camera");
+                isOpenCamera = true;
+            }
+            if (strcmp(message, ACTION_CLOSE_CAMERA) == 0) {
+                Serial.println("[WSc] action: close camera");
+                isOpenCamera = false;
+            }
+            if (strcmp(message, ACTION_TURN0) == 0) {
+                Serial.println("[WSc] action: turn0");
+                turnTo(0);
+            }
+            if (strcmp(message, ACTION_TURN90) == 0) {
+                Serial.println("[WSc] action: turn90");
+                turnTo(90);
+            }
+            if (strcmp(message, ACTION_TURN180) == 0) {
+                Serial.println("[WSc] action: turn180");
+                turnTo(180);
+            }
             // send message to server
             // webSocket.sendTXT("message here");
             break;
@@ -193,21 +230,6 @@ void initWebSocket() {
     webSocket.onEvent(webSocketEvent);
     webSocket.setReconnectInterval(3000);
     webSocket.enableHeartbeat(15000, 3000, 2);
-}
-
-void initServo() {
-    int channel = ESP32PWM::timerAndIndexToChannel(2, 0);
-    ESP32PWM::allocateTimer(2);
-    servo.setPeriodHertz(50);
-    servo.attach(PIN_SERVO, minUs, maxUs);
-    Serial.printf("ESP32PWM channel %d", channel);
-}
-
-void turnTo(int degree) {
-    if (degree < 0) degree = 0;
-    if (degree > 180) degree = 180;
-    servo.write(degree);
-    delay(100);
 }
 
 void setup() {
