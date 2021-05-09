@@ -99,12 +99,11 @@
         webSocket.onmessage = function (event) {
             imageData = event.data;
             frameCount++;
-            Msg("frame data len: ", imageData.size);
+            //Msg("frame data len: ", imageData.size);
             var image = new Image();
             image.src = URL.createObjectURL(imageData);
             image.onload = () => {
                 URL.revokeObjectURL(image.src);
-                Msg("image size: ", image.width, image.height)
                 ctx.save();
                 // ctx.translate(120, 180);
                 // ctx.rotate(90 * (Math.PI / 180));
