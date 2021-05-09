@@ -4,10 +4,8 @@
 
 package socket
 
-import "log"
-
 type Broadcast struct {
-	data []byte
+	data   []byte
 	sender int
 }
 
@@ -48,7 +46,6 @@ func (h *Hub) run() {
 			}
 		case broadcast := <-h.broadcast:
 			//uploader的视频
-			log.Printf("uid %d - %s", broadcast.sender, broadcast.data)
 			for client := range h.clients {
 				if broadcast.sender == UID_UPLOADER {
 					if client.sender != UID_UPLOADER {

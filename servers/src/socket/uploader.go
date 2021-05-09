@@ -14,14 +14,14 @@ const (
 	STREAM_PART         = "Content-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n"
 )
 
-func (up * Client) readUploaderPump()  {
+func (up *Client) readUploaderPump() {
 	defer func() {
 		up.hub.unregister <- up
 		up.conn.Close()
 	}()
 	up.conn.SetReadLimit(maxMessageSize)
 	up.conn.SetReadDeadline(time.Now().Add(pongWait))
-	up.conn.SetPongHandler(func(string) error {up.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil})
+	up.conn.SetPongHandler(func(string) error { up.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
 		msgType, message, err := up.conn.ReadMessage()
 		if err != nil {
@@ -51,7 +51,6 @@ func (up * Client) readUploaderPump()  {
 			}
 			break
 		case websocket.BinaryMessage:
-			log.Print("rev binary size %d", len(message))
 			up.hub.broadcast <- &Broadcast{data: message, sender: up.sender}
 			break
 		case websocket.CloseMessage:
