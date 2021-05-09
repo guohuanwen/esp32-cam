@@ -64,17 +64,17 @@ func SetupHub() *Hub {
 }
 
 func SetupClient(serverMux *http.ServeMux, hub *Hub) {
-	serverMux.HandleFunc("/client", clientHandler)
-	serverMux.HandleFunc("/client/ws", func(writer http.ResponseWriter, request *http.Request) {
+	serverMux.HandleFunc("/camera/client", clientHandler)
+	serverMux.HandleFunc("/camera/client/ws", func(writer http.ResponseWriter, request *http.Request) {
 		clientWs(writer, request, hub)
 	})
 }
 
 func SetupUploader(serverMux *http.ServeMux, hub *Hub)  {
-	serverMux.HandleFunc("/uploader", func(writer http.ResponseWriter, request *http.Request) {
+	serverMux.HandleFunc("/camera/uploader", func(writer http.ResponseWriter, request *http.Request) {
 		uploaderHandler(writer, request, hub);
 	})
-	serverMux.HandleFunc("/uploader/ws", func(writer http.ResponseWriter, request *http.Request) {
+	serverMux.HandleFunc("/camera/uploader/ws", func(writer http.ResponseWriter, request *http.Request) {
 		uploaderWs(writer, request, hub);
 	})
 }

@@ -12,7 +12,7 @@
 </head>
 
 <body>
-<canvas id="video" width="240" height="320"></canvas>
+<canvas id="video" width="640" height="480"></canvas>
 <pre id="FrameRate"></pre>
 <pre id="Msg"></pre>
 <button width="100" height="60" onclick="openBtn()">open</button>
@@ -24,7 +24,7 @@
 <script>
     var webSocket;
     //定义服务器地址
-    var wsURL = "ws://" + document.location.host + "/client/ws";
+    var wsURL = "ws://" + document.location.host + "/camera/client/ws";
     var canvas = document.getElementById('video');
     var ctx = canvas.getContext('2d');
 
@@ -104,10 +104,11 @@
             image.src = URL.createObjectURL(imageData);
             image.onload = () => {
                 URL.revokeObjectURL(image.src);
+                Msg("image size: ", image.width, image.height)
                 ctx.save();
-                ctx.translate(120, 180);
-                ctx.rotate(90 * (Math.PI / 180));
-                ctx.translate(-180, -120);
+                // ctx.translate(120, 180);
+                // ctx.rotate(90 * (Math.PI / 180));
+                // ctx.translate(-180, -120);
                 ctx.drawImage(image, 0, 0);
                 ctx.restore();
             }
