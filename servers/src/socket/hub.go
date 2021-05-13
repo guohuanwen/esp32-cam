@@ -64,7 +64,7 @@ func (h *Hub) run() {
 					if client.sender == UID_UPLOADER {
 						select {
 						case client.send <- []byte(ACTION_CLOSE_CAMERA):
-							log.Printf("notify auto open ")
+							log.Printf("notify auto close ")
 						default:
 						}
 					}
