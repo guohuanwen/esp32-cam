@@ -39,10 +39,16 @@ func (h *Hub) run() {
 		select {
 		case client := <-h.register:
 			h.clients[client] = true
+			if (client.sender != UID_UPLOADER) {//客户端连上了
+				h.broadcast <- &Broadcast{data: []byte(ACTION_OPEN_CAMERA), sender: client.sender}
+			}
 		case client := <-h.unregister:
 			if _, ok := h.clients[client]; ok {
 				delete(h.clients, client)
 				close(client.send)
+			}
+			if len(h.clients) == 1 {//只剩下uploader
+				h.broadcast <- &Broadcast{data: []byte(ACTION_CLOSE_CAMERA), sender: client.sender}
 			}
 		case broadcast := <-h.broadcast:
 			//uploader的视频

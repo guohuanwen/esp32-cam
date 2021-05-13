@@ -1,4 +1,4 @@
-package main
+package socket
 
 const (
 	ACTION_OPEN_CAMERA = "OpenCamera"
