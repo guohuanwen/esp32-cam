@@ -4,6 +4,8 @@
 
 package socket
 
+import "log"
+
 type Broadcast struct {
 	data   []byte
 	sender int
@@ -40,15 +42,33 @@ func (h *Hub) run() {
 		case client := <-h.register:
 			h.clients[client] = true
 			if (client.sender != UID_UPLOADER) {//客户端连上了
-				h.broadcast <- &Broadcast{data: []byte(ACTION_OPEN_CAMERA), sender: client.sender}
+				log.Printf("client connent %d", client.sender)
+				for client := range h.clients {
+					if client.sender == UID_UPLOADER {
+						select {
+						case client.send <- []byte(ACTION_OPEN_CAMERA):
+							log.Printf("notify auto open ")
+						default:
+						}
+					}
+				}
 			}
 		case client := <-h.unregister:
 			if _, ok := h.clients[client]; ok {
 				delete(h.clients, client)
 				close(client.send)
 			}
+			log.Printf("client disconnent %d size = %d", client.sender, len(h.clients))
 			if len(h.clients) == 1 {//只剩下uploader
-				h.broadcast <- &Broadcast{data: []byte(ACTION_CLOSE_CAMERA), sender: client.sender}
+				for client := range h.clients {
+					if client.sender == UID_UPLOADER {
+						select {
+						case client.send <- []byte(ACTION_CLOSE_CAMERA):
+							log.Printf("notify auto open ")
+						default:
+						}
+					}
+				}
 			}
 		case broadcast := <-h.broadcast:
 			//uploader的视频
