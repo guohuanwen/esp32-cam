@@ -76,7 +76,7 @@ bash start.sh
     ![image1](./image/ESP32-CAM.png)
   + ESP32-CAM 调试接线  
     ![image2](./image/ESP32-CAM-CONNECTION.png)
-  + V1.1.0版本 接线
+  + V1.1.0版本 接线  
     ![image2](./image/v1.1.0.png)
     |  电源      | ESP32-Cam     | 舵机（SG90） |
     |  :-:     | :-:         | :-:  |
@@ -95,3 +95,11 @@ platformio device monitor
 ```
 ### 视频访问
 浏览器打开 http://${服务端IP}/camera/client
+
+## 技术点
++ 3D建模
++ 3D打印
++ Golang
++ Arduino/Esp32
++ Websocket
++ Html/JavaScript
