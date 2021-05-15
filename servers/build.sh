@@ -1,1 +1,1 @@
-go build -o ./build/camera-servers src/main.go
+go build -o ./build/camera src/main.go

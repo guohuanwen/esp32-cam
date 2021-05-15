@@ -1,1 +1,1 @@
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./build/camera-servers src/main.go
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./build/camera src/main.go
